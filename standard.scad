@@ -44,7 +44,7 @@ d_wall = 0.95;
 d_clear = 0.25; 
 
 // height of tab (yaxis, measured from inner wall)
-d_tabh = 15.85;    
+d_tabh = 15.85 * 0.8;
 // maximum width of tab 
 d_tabw = 42; 
 // angle of tab   
