@@ -16,10 +16,10 @@ function height (z,d=0,l=0,s=true) = (s?((abs(hf(z,d,l))%7==0)?hf(z,d,l):hf(z,d,
 //          set n_div values to 0 for a solid bin 
 // style_tab:   tab style for all compartments. see cut()
 // scoop_weight:    scoop toggle for all compartments. see cut()
-module cutEqual(n_divx=1, n_divy=1, style_tab=1, scoop_weight=1) {
+module cutEqual(n_divx=1, n_divy=1, style_tab=1, style_wall=0, scoop_weight=1) {
     for (i = [1:n_divx]) 
     for (j = [1:n_divy])
-    cut((i-1)*$gxx/n_divx,(j-1)*$gyy/n_divy, $gxx/n_divx, $gyy/n_divy, style_tab, scoop_weight);
+    cut((i-1)*$gxx/n_divx,(j-1)*$gyy/n_divy, $gxx/n_divx, $gyy/n_divy, style_tab, style_wall, scoop_weight);
 }
 
 // initialize gridfinity
@@ -52,11 +52,13 @@ module gridfinityInit(gx, gy, h, h0 = 0, l = l_grid) {
 //      alignment only matters if the compartment size is larger than d_tabw
 //      0:full, 1:auto, 2:left, 3:center, 4:right, 5:none
 //      Automatic alignment will use left tabs for bins on the left edge, right tabs for bins on the right edge, and center tabs everywhere else. 
+// sw:  wall thickness style
+//      0:regular, 1:full lip inset thickness (desk tray style)
 // s:   toggle the rounded back corner that allows for easy removal
-module cut(x=0, y=0, w=1, h=1, t=1, s=1) {
+module cut(x=0, y=0, w=1, h=1, t=1, sw=0, s=1) {
     translate([0,0,-$dh-h_base])
     cut_move(x,y,w,h)
-    block_cutter(clp(x,0,$gxx), clp(y,0,$gyy), clp(w,0,$gxx-x), clp(h,0,$gyy-y), t, s);
+    block_cutter(clp(x,0,$gxx), clp(y,0,$gyy), clp(w,0,$gxx-x), clp(h,0,$gyy-y), t, sw, s);
 }
 
 // Translates an object from the origin point to the center of the requested compartment block, can be used to add custom cuts in the bin
@@ -228,8 +230,10 @@ module cut_move_unsafe(x, y, w, h) {
     children();
 }
 
-module block_cutter(x,y,w,h,t,s) {
+module block_cutter(x,y,w,h,t,sw,s) {
     
+    desk_bin_walls = sw == 1 ? true : false;
+
     v_len_tab = d_tabh;
     v_len_lip = d_wall2-d_wall+1.2;
     v_cut_tab = d_tabh - (2*r_f1)/tan(a_tab); 
@@ -237,17 +241,20 @@ module block_cutter(x,y,w,h,t,s) {
     v_ang_tab = a_tab;
     v_ang_lip = 45;
     
-    ycutfirst = y == 0 && style_lip == 0;
-    ycutlast = abs(y+h-$gyy)<0.001 && style_lip == 0; 
-    xcutfirst = x == 0 && style_lip == 0;
-    xcutlast = abs(x+w-$gxx)<0.001 && style_lip == 0;
+    xislast = abs(x+w-$gxx)<0.001;
+    yislast = abs(y+h-$gyy)<0.001;
+    ycutfirst = y == 0 && (style_lip == 0 || desk_bin_walls);
+    ycutlast = yislast && (style_lip == 0 || desk_bin_walls);
+    xcutfirst = x == 0 && (style_lip == 0 || desk_bin_walls);
+    xcutlast = xislast && (style_lip == 0 || desk_bin_walls);
     zsmall = ($dh+h_base)/7 < 3;
     
     ylen = h*($gyy*l_grid+d_magic)/$gyy-d_div; 
     xlen = w*($gxx*l_grid+d_magic)/$gxx-d_div; 
     
     height = $dh;
-    extent = (abs(s) > 0 && ycutfirst ? d_wall2-d_wall-d_clear : 0); 
+    xtent = d_wall2 - d_wall - d_clear;
+    extent = (abs(s) > 0 && ycutfirst ? xtent : 0);
     tab = (zsmall || t == 5) ? (ycutlast?v_len_lip:0) : v_len_tab; 
     ang = (zsmall || t == 5) ? (ycutlast?v_ang_lip:0) : v_ang_tab;
     cut = (zsmall || t == 5) ? (ycutlast?v_cut_lip:0) : v_cut_tab;
@@ -271,7 +278,7 @@ module block_cutter(x,y,w,h,t,s) {
             translate([0,0,-(xlen/2-r_f2)-v_cut_lip])
             cube([ylen,height,v_cut_lip*2]);
         }
-        if (t != 0 && t != 5)
+        if ((t != 0 && t != 5) && !desk_bin_walls)
         fillet_cutter(2,"indigo")
         difference() {
             transform_tab(style, xlen, ((xcutfirst&&style==-1)||(xcutlast&&style==1))?v_cut_lip:0)
@@ -306,27 +313,31 @@ module block_cutter(x,y,w,h,t,s) {
     
     fillet_cutter(0,"hotpink")
     difference() {
-        transform_main(xlen)
+        translate([0, 0, desk_bin_walls ? ((x == 0 || xislast) ? (xislast ? xtent : -xtent) / 2 : 0) : 0])
+        transform_main(xlen-(desk_bin_walls ? ((x==0||xislast)?xtent:0) : 0))
         difference() {
-            profile_cutter(height-h_bot, ylen-extent, s);
+            translate([desk_bin_walls ? (yislast ? xtent : 0) : 0, 0, 0])
+            profile_cutter(height-h_bot, (ylen-(desk_bin_walls?((y==0||yislast)?xtent:0):0)), s);
             
             if (!((zsmall || t == 5) && !ycutlast))
             profile_cutter_tab(height-h_bot, tab, ang);
             
-            if (!(abs(s) > 0)&& y == 0)
-            translate([ylen-extent,0,0])
-            mirror([1,0,0])
-            profile_cutter_tab(height-h_bot, v_len_lip, v_ang_lip);
+            if(!desk_bin_walls) {
+                if (!(abs(s) > 0)&& y == 0)
+                translate([ylen-extent,0,0])
+                mirror([1,0,0])
+                profile_cutter_tab(height-h_bot, v_len_lip, v_ang_lip);
+            }
         }
         
-        if (xcutfirst)
+        if (xcutfirst && !desk_bin_walls)
         color("indigo")
         translate([ylen/2+0.001,0,xlen/2+0.001])
         rotate([0,90,0])
         transform_main(2*ylen)
         profile_cutter_tab(height-h_bot, v_len_lip, v_ang_lip);
         
-        if (xcutlast)
+        if (xcutlast && !desk_bin_walls)
         color("indigo")
         translate([ylen/2+0.001,0,-xlen/2+0.001])
         rotate([0,-90,0])
