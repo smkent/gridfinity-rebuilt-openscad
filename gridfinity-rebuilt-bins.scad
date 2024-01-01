@@ -56,7 +56,9 @@ style_tab = 1; //[0:Full,1:Auto,2:Left,3:Center,4:Right,5:None]
 style_lip = 0; //[0: Regular lip, 1:remove lip subtractively, 2: remove lip and retain height]
 // generate tabs on the lid to help align stacked bins
 stacking_tabs = false;
-// scoop weight percentage. 0 disables scoop, 1 is regular scoop. Any real number will scale the scoop.
+// How thick should the outer walls should be
+style_wall = 0; // [0: Regular thickness, 1: Full lip inset thickness - desk tray style]
+// scoop weight percentage. 0 disables scoop, 1 is regular scoop. Any real number will scale the scoop. 
 scoop = 1; //[0:0.1:1]
 // only cut magnet/screw holes at the corners of the bin to save uneccesary print time
 only_corners = false;
@@ -77,9 +79,8 @@ color("tomato") {
         gridfinityBase(gridx, gridy, l_grid, div_base_x, div_base_y, style_hole, only_corners=only_corners);
 
         if (divx > 0 && divy > 0)
-        cutEqual(n_divx = divx, n_divy = divy, style_tab = style_tab, scoop_weight = scoop);
+        cutEqual(n_divx = divx, n_divy = divy, style_tab = style_tab, style_wall = style_wall, scoop_weight = scoop);
     }
-    // gridfinityBase(gridx, gridy, l_grid, div_base_x, div_base_y, style_hole, only_corners=only_corners);
 }
 
 
