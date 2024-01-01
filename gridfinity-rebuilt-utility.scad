@@ -230,6 +230,26 @@ module cut_move_unsafe(x, y, w, h) {
     children();
 }
 
+
+function dwxx(desk_bin_walls, xisfirst, xislast) = (
+    desk_bin_walls
+        ? (
+            ((xisfirst && !xislast) ? -1 : 0)
+            + ((!xisfirst && xislast) ? 1 : 0)
+        )
+        : 0
+);
+
+function dweach(desk_bin_walls, xisfirst, xislast) = (
+    desk_bin_walls
+        ? (
+            (xisfirst ? 1 : 0)
+            + (xislast ? 1 : 0)
+        )
+        : 0
+);
+
+
 module block_cutter(x,y,w,h,t,sw,s) {
     
     desk_bin_walls = sw == 1 ? true : false;
@@ -253,8 +273,8 @@ module block_cutter(x,y,w,h,t,sw,s) {
     xlen = w*($gxx*l_grid+d_magic)/$gxx-d_div; 
     
     height = $dh;
-    xtent = d_wall2 - d_wall - d_clear;
-    extent = (abs(s) > 0 && ycutfirst ? xtent : 0);
+    extent_size = d_wall2 - d_wall - d_clear;
+    extent = (abs(s) > 0 && ycutfirst ? extent_size : 0);
     tab = (zsmall || t == 5) ? (ycutlast?v_len_lip:0) : v_len_tab; 
     ang = (zsmall || t == 5) ? (ycutlast?v_ang_lip:0) : v_ang_tab;
     cut = (zsmall || t == 5) ? (ycutlast?v_cut_lip:0) : v_cut_tab;
@@ -313,21 +333,20 @@ module block_cutter(x,y,w,h,t,sw,s) {
     
     fillet_cutter(0,"hotpink")
     difference() {
-        translate([0, 0, desk_bin_walls ? ((x == 0 || xislast) ? (xislast ? (x == 0 ? 0 : xtent) : -xtent) / 2 : 0) : 0])
-        transform_main(xlen-(desk_bin_walls ? ((x==0||xislast)?(x == 0 && xislast ? xtent * 2 : xtent):0) : 0))
+        translate([0, 0, (extent_size / 2) * dwxx(desk_bin_walls, x == 0, xislast)])
+        transform_main(xlen - extent_size * dweach(desk_bin_walls, x == 0, xislast))
         difference() {
-            translate([desk_bin_walls ? (yislast ? xtent : 0) : 0, 0, 0])
-            profile_cutter(height-h_bot, (ylen-(desk_bin_walls?((y==0||yislast)?(y==0 && yislast ? xtent * 2 : xtent):0):extent)), s);
+            translate([desk_bin_walls ? (yislast ? extent_size : 0) : 0, 0, 0])
+            profile_cutter(height-h_bot, (ylen-(desk_bin_walls?((y==0||yislast)?(y==0 && yislast ? extent_size * 2 : extent_size):0):extent)), s);
             
             if (!((zsmall || t == 5) && !ycutlast))
             profile_cutter_tab(height-h_bot, tab, ang);
             
-            if(!desk_bin_walls) {
-                if (!(abs(s) > 0)&& y == 0)
-                translate([ylen-extent,0,0])
-                mirror([1,0,0])
-                profile_cutter_tab(height-h_bot, v_len_lip, v_ang_lip);
-            }
+            if(!desk_bin_walls)
+            if (!(abs(s) > 0)&& y == 0)
+            translate([ylen-extent,0,0])
+            mirror([1,0,0])
+            profile_cutter_tab(height-h_bot, v_len_lip, v_ang_lip);
         }
         
         if (xcutfirst && !desk_bin_walls)
