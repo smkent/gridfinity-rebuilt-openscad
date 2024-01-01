@@ -30,9 +30,18 @@ module gridfinityInit(gx, gy, h, h0 = 0, l = l_grid) {
     $dh0 = h0; 
     color("tomato") {
     difference() {
-        color("firebrick") 
-        block_bottom(h0==0?$dh-0.1:h0, gx, gy, l);
-        children();
+        union() {
+            color("firebrick") 
+            block_bottom(h0==0?$dh-0.1:h0, gx, gy, l);
+            if ($children > 1) {
+                children(0);
+            }
+        }
+        if ($children > 1) {
+            children([1:$children-1]);
+        } else {
+            children();
+        }
     }
     color("royalblue") 
     block_wall(gx, gy, l) {
@@ -285,14 +294,14 @@ module block_cutter(x,y,w,h,t,s) {
     ylen = h*($gyy*l_grid+d_magic)/$gyy-d_div; 
     xlen = w*($gxx*l_grid+d_magic)/$gxx-d_div; 
     
-    height = $dh;
+    height = $dh + h_cut_extra;
     extent = (abs(s) > 0 && ycutfirst ? d_wall2-d_wall-d_clear : 0); 
     tab = (zsmall || t == 5) ? (ycutlast?v_len_lip:0) : v_len_tab; 
     ang = (zsmall || t == 5) ? (ycutlast?v_ang_lip:0) : v_ang_tab;
     cut = (zsmall || t == 5) ? (ycutlast?v_cut_lip:0) : v_cut_tab;
     style = (t > 1 && t < 5) ? t-3 : (x == 0 ? -1 : xcutlast ? 1 : 0);
     
-    translate([0,ylen/2,h_base+h_bot])
+    translate([0,ylen/2,h_base + h_bot - h_cut_extra])
     rotate([90,0,-90]) {
     
     if (!zsmall && xlen - d_tabw > 4*r_f2 && (t != 0 && t != 5)) {
