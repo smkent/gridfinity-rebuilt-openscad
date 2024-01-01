@@ -317,7 +317,7 @@ module block_cutter(x,y,w,h,t,sw,s) {
         transform_main(xlen-(desk_bin_walls ? ((x==0||xislast)?(x == 0 && xislast ? xtent * 2 : xtent):0) : 0))
         difference() {
             translate([desk_bin_walls ? (yislast ? xtent : 0) : 0, 0, 0])
-            profile_cutter(height-h_bot, (ylen-(desk_bin_walls?((y==0||yislast)?(y==0 && yislast ? xtent * 2 : xtent):0):0)), s);
+            profile_cutter(height-h_bot, (ylen-(desk_bin_walls?((y==0||yislast)?(y==0 && yislast ? xtent * 2 : xtent):0):extent)), s);
             
             if (!((zsmall || t == 5) && !ycutlast))
             profile_cutter_tab(height-h_bot, tab, ang);
