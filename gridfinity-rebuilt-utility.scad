@@ -320,7 +320,15 @@ module block_cutter(x,y,w,h,t,sw,s) {
     ylen = h*($gyy*l_grid+d_magic)/$gyy-d_div; 
     xlen = w*($gxx*l_grid+d_magic)/$gxx-d_div; 
     
-    height = $dh + h_cut_extra;
+    cut_extra = h_cut_extra + (
+        (
+            floor(x) == floor(x + w - 0.0001)
+            && floor(y) == floor(y + h - 0.0001)
+        )
+            ? h_cut_extra_single
+            : 0
+    );
+    height = $dh + cut_extra;
     extent_size = d_wall2 - d_wall - d_clear;
     extent = (abs(s) > 0 && ycutfirst ? extent_size : 0);
     tab = (zsmall || t == 5) ? (ycutlast?v_len_lip:0) : v_len_tab; 
@@ -328,7 +336,7 @@ module block_cutter(x,y,w,h,t,sw,s) {
     cut = (zsmall || t == 5) ? (ycutlast?v_cut_lip:0) : v_cut_tab;
     style = (t > 1 && t < 5) ? t-3 : (x == 0 ? -1 : xcutlast ? 1 : 0);
     
-    translate([0,ylen/2,h_base + h_bot - h_cut_extra])
+    translate([0,ylen/2,h_base + h_bot - cut_extra])
     rotate([90,0,-90]) {
     
     if (!zsmall && xlen - d_tabw > 4*r_f2 && (t != 0 && t != 5)) {

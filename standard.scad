@@ -2,7 +2,8 @@
 // height of the base
 h_base = 5;     
 // extra bin depth (overlap with base)
-h_cut_extra = 1.2;
+h_cut_extra = 1.8;
+h_cut_extra_single = 2.0;
 // outside rounded radius of bin
 r_base = 4;     
 // lower base chamfer "radius"
