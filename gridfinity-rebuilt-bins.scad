@@ -33,7 +33,7 @@ gridx = 5;
 // number of bases along y-axis   
 gridy = 5;  
 // bin height. See bin height information and "gridz_define" below.  
-gridz = 6;
+gridz = 6; // [1:0.5:20]
 
 /* [Compartments] */
 // number of X Divisions (set to zero to have solid bin)
