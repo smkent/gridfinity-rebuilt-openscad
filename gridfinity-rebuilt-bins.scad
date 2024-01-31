@@ -91,6 +91,7 @@ div_base_y = 0;
 color("tomato") {
 gridfinityInit(gridx, gridy, height(gridz, gridz_define, style_lip, enable_zsnap), height_internal) {
 
+    gridfinityBase(gridx, gridy, l_grid, div_base_x, div_base_y, style_hole, only_corners=only_corners);
     if (divx > 0 && divy > 0) {
 
         cutEqual(n_divx = divx, n_divy = divy, style_tab = style_tab, scoop_weight = scoop);
@@ -100,9 +101,7 @@ gridfinityInit(gridx, gridy, height(gridz, gridz_define, style_lip, enable_zsnap
         cutCylinders(n_divx=cdivx, n_divy=cdivy, cylinder_diameter=cd, cylinder_height=ch, coutout_depth=c_depth, orientation=c_orientation);
     }
 }
-gridfinityBase(gridx, gridy, l_grid, div_base_x, div_base_y, style_hole, only_corners=only_corners);
 }
-
 
 // ===== EXAMPLES ===== //
 
