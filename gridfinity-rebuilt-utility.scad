@@ -56,11 +56,14 @@ module cutCylinders(n_divx=1, n_divy=1, cylinder_diameter=1, cylinder_height=1, 
 }
 
 // initialize gridfinity
-module gridfinityInit(gx, gy, h, h0 = 0, l = l_grid) {
+// sl:  lip style of this bin.
+//      0:Regular lip, 1:Remove lip subtractively, 2:Remove lip and retain height
+module gridfinityInit(gx, gy, h, h0 = 0, l = l_grid, sl = 0) {
     $gxx = gx;
     $gyy = gy;
     $dh = h;
     $dh0 = h0;
+    $style_lip = sl;
     color("tomato") {
     difference() {
         union() {
@@ -78,7 +81,7 @@ module gridfinityInit(gx, gy, h, h0 = 0, l = l_grid) {
     }
     color("royalblue")
     block_wall(gx, gy, l) {
-        if (style_lip == 0) profile_wall();
+        if ($style_lip == 0) profile_wall();
         else profile_wall2();
     }
 
@@ -344,10 +347,10 @@ module block_cutter(x,y,w,h,t,sw,s) {
 
     xislast = abs(x+w-$gxx)<0.001;
     yislast = abs(y+h-$gyy)<0.001;
-    ycutfirst = y == 0 && (style_lip == 0 || desk_bin_walls);
-    ycutlast = yislast && (style_lip == 0 || desk_bin_walls);
-    xcutfirst = x == 0 && (style_lip == 0 || desk_bin_walls);
-    xcutlast = xislast && (style_lip == 0 || desk_bin_walls);
+    ycutfirst = y == 0 && ($style_lip == 0 || desk_bin_walls);
+    ycutlast = yislast && ($style_lip == 0 || desk_bin_walls);
+    xcutfirst = x == 0 && ($style_lip == 0 || desk_bin_walls);
+    xcutlast = xislast && ($style_lip == 0 || desk_bin_walls);
     zsmall = ($dh+h_base)/7 < 3;
 
     ylen = h*($gyy*l_grid+d_magic)/$gyy-d_div;
