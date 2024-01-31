@@ -94,7 +94,7 @@ gridfinityInit(gridx, gridy, height(gridz, gridz_define, style_lip, enable_zsnap
     gridfinityBase(gridx, gridy, l_grid, div_base_x, div_base_y, style_hole, only_corners=only_corners);
     if (divx > 0 && divy > 0) {
 
-        cutEqual(n_divx = divx, n_divy = divy, style_tab = style_tab, scoop_weight = scoop);
+        cutEqual(n_divx = divx, n_divy = divy, style_tab = style_tab, style_wall = style_wall, scoop_weight = scoop);
 
     } else if (cdivx > 0 && cdivy > 0) {
 
